@@ -87,33 +87,83 @@ The application creates default users on startup:
 http://localhost:8080/api/v1
 ```
 
+> **Note:** All endpoints are prefixed with `/api/v1` because `server.servlet.context-path=/api/v1` is set in `application.properties`.
+
+## JWT Authentication Details
+
+This application uses **JWT (JSON Web Token)** for stateless authentication. All protected endpoints require a valid JWT in the `Authorization` header.
+
+### JWT Configuration
+
+Set these properties in `src/main/resources/application.properties`:
+```properties
+jwt.secret=sowndaryaSecretKeyForJWTTokenGeneration2024
+jwt.expiration=86400000 # Token validity in milliseconds (24 hours)
+```
+- **jwt.secret**: Secret key for signing JWTs. Change this in production!
+- **jwt.expiration**: Token validity duration in milliseconds.
+
+### How JWT Works in This Application
+- On successful registration or login, the server returns a JWT in the response body.
+- The client must include this token in the `Authorization` header as `Bearer <token>` for all protected endpoints.
+- The token contains the username as the subject and is signed using HS256.
+- The server validates the token on each request using the secret key and checks for expiration.
+
 ### Authentication Endpoints
 
 #### Register User
-```http
-POST /auth/register
-Content-Type: application/json
-
-{
-  "username": "newuser",
-  "email": "user@example.com",
-  "password": "password123",
-  "firstName": "John",
-  "lastName": "Doe",
-  "role": "USER"
-}
-```
+`POST /api/v1/auth/register`
+- Returns: `{ "token": "<jwt>", "username": "...", "role": "...", "message": "User registered successfully" }`
 
 #### Login
-```http
-POST /auth/login
-Content-Type: application/json
+`POST /api/v1/auth/login`
+- Returns: `{ "token": "<jwt>", "username": "...", "role": "...", "message": "Authentication successful" }`
 
+#### Example Auth Response
+```json
 {
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6...",
   "username": "admin",
-  "password": "admin123"
+  "role": "ADMIN",
+  "message": "Authentication successful"
 }
 ```
+
+### Using the JWT Token
+Include the token in the `Authorization` header for all protected endpoints:
+```http
+Authorization: Bearer <jwt_token>
+```
+
+### Token Validation
+- The server checks the token signature and expiration for every request.
+- If the token is invalid or expired, a `401 Unauthorized` response is returned.
+
+## CRUD Operations Overview
+
+### License CRUD Operations
+- **Create**: `POST /licenses` (ADMIN, MANAGER)
+- **Read**: 
+  - `GET /licenses` (All authenticated users)
+  - `GET /licenses/{id}` (All authenticated users)
+  - `GET /licenses/key/{licenseKey}` (All authenticated users)
+  - `GET /licenses/customer/{customerName}` (ADMIN, MANAGER)
+  - `GET /licenses/product/{productName}` (ADMIN, MANAGER)
+  - `GET /licenses/status/{status}` (ADMIN, MANAGER)
+  - `GET /licenses/expired` (ADMIN, MANAGER)
+- **Update**: 
+  - `PUT /licenses/{id}` (ADMIN, MANAGER)
+  - `PATCH /licenses/{id}/status` (ADMIN, MANAGER)
+- **Delete**: `DELETE /licenses/{id}` (ADMIN only)
+
+### User CRUD Operations
+- **Read**:
+  - `GET /users/profile` (All authenticated users)
+  - `GET /users` (ADMIN only)
+  - `GET /users/{id}` (ADMIN only)
+- **Delete**: `DELETE /users/{id}` (ADMIN only)
+
+> **Note:** User creation is handled via `/auth/register` and user updates are not exposed via API for security reasons.
 
 ### License Management Endpoints
 
@@ -142,34 +192,15 @@ GET /licenses
 Authorization: Bearer <jwt_token>
 ```
 
-#### Get License by ID
+#### Get License by ID (All authenticated users)
 ```http
 GET /licenses/{id}
 Authorization: Bearer <jwt_token>
 ```
 
-#### Update License (ADMIN/MANAGER only)
+#### Get License by Key (All authenticated users)
 ```http
-PUT /licenses/{id}
-Authorization: Bearer <jwt_token>
-Content-Type: application/json
-
-{
-  "licenseKey": "LIC-ABC12345",
-  "productName": "Software Pro Updated",
-  "customerName": "Acme Corp",
-  "customerEmail": "contact@acme.com",
-  "issueDate": "2024-01-01",
-  "expiryDate": "2025-01-01",
-  "status": "ACTIVE",
-  "maxUsers": 15,
-  "description": "Updated enterprise license"
-}
-```
-
-#### Delete License (ADMIN only)
-```http
-DELETE /licenses/{id}
+GET /licenses/key/{licenseKey}
 Authorization: Bearer <jwt_token>
 ```
 
@@ -197,9 +228,34 @@ GET /licenses/expired
 Authorization: Bearer <jwt_token>
 ```
 
+#### Update License (ADMIN/MANAGER only)
+```http
+PUT /licenses/{id}
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "licenseKey": "LIC-ABC12345",
+  "productName": "Software Pro Updated",
+  "customerName": "Acme Corp",
+  "customerEmail": "contact@acme.com",
+  "issueDate": "2024-01-01",
+  "expiryDate": "2025-01-01",
+  "status": "ACTIVE",
+  "maxUsers": 15,
+  "description": "Updated enterprise license"
+}
+```
+
 #### Update License Status (ADMIN/MANAGER only)
 ```http
 PATCH /licenses/{id}/status?status=EXPIRED
+Authorization: Bearer <jwt_token>
+```
+
+#### Delete License (ADMIN only)
+```http
+DELETE /licenses/{id}
 Authorization: Bearer <jwt_token>
 ```
 
@@ -234,6 +290,19 @@ Authorization: Bearer <jwt_token>
 DELETE /users/{id}
 Authorization: Bearer <jwt_token>
 ```
+
+## Quick Start: Login & Register URLs
+
+Use these endpoints to obtain a JWT token before accessing protected CRUD operations:
+
+- **Register:**
+  - URL: `http://localhost:8080/api/v1/auth/register`
+  - Method: `POST`
+- **Login:**
+  - URL: `http://localhost:8080/api/v1/auth/login`
+  - Method: `POST`
+
+> After registering or logging in, use the returned `token` as a Bearer token in the `Authorization` header for all subsequent CRUD requests.
 
 ## Role-Based Access Control
 
@@ -303,8 +372,100 @@ curl -X POST http://localhost:8080/api/v1/auth/login \
 ```
 
 ### 3. Use the JWT token for authenticated requests
+
+#### Create License
+```bash
+curl -X POST http://localhost:8080/api/v1/licenses \
+  -H "Authorization: Bearer <your_jwt_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "licenseKey": "LIC-ABC12345",
+    "productName": "Software Pro",
+    "customerName": "Acme Corp",
+    "customerEmail": "contact@acme.com",
+    "issueDate": "2024-01-01",
+    "expiryDate": "2025-01-01",
+    "status": "ACTIVE",
+    "maxUsers": 10,
+    "description": "Enterprise license"
+  }'
+```
+
+#### Get All Licenses
 ```bash
 curl -X GET http://localhost:8080/api/v1/licenses \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+#### Get License by ID
+```bash
+curl -X GET http://localhost:8080/api/v1/licenses/1 \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+#### Get License by Key
+```bash
+curl -X GET http://localhost:8080/api/v1/licenses/key/LIC-ABC12345 \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+#### Get Licenses by Customer
+```bash
+curl -X GET http://localhost:8080/api/v1/licenses/customer/Acme%20Corp \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+#### Get Licenses by Product
+```bash
+curl -X GET http://localhost:8080/api/v1/licenses/product/Software%20Pro \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+#### Get Licenses by Status
+```bash
+curl -X GET http://localhost:8080/api/v1/licenses/status/ACTIVE \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+#### Get Expired Licenses
+```bash
+curl -X GET http://localhost:8080/api/v1/licenses/expired \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+#### Update License
+```bash
+curl -X PUT http://localhost:8080/api/v1/licenses/1 \
+  -H "Authorization: Bearer <your_jwt_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "licenseKey": "LIC-ABC12345",
+    "productName": "Software Pro Updated",
+    "customerName": "Acme Corp",
+    "customerEmail": "contact@acme.com",
+    "issueDate": "2024-01-01",
+    "expiryDate": "2025-01-01",
+    "status": "ACTIVE",
+    "maxUsers": 15,
+    "description": "Updated enterprise license"
+  }'
+```
+
+#### Update License Status
+```bash
+curl -X PATCH "http://localhost:8080/api/v1/licenses/1/status?status=EXPIRED" \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+#### Delete License
+```bash
+curl -X DELETE http://localhost:8080/api/v1/licenses/1 \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+#### Generate License Key
+```bash
+curl -X GET http://localhost:8080/api/v1/licenses/generate-key \
   -H "Authorization: Bearer <your_jwt_token>"
 ```
 
@@ -344,23 +505,33 @@ src/main/java/com/sow/simple/application/
 └── Application.java
 ```
 
-## Production Deployment
+## Full Example URLs for License Management Endpoints
 
-1. Update database configuration for production
-2. Set secure JWT secret
-3. Configure CORS for your domain
-4. Set up proper logging
-5. Use HTTPS in production
-6. Consider using environment variables for sensitive data
+Use these full URLs when making requests (replace `{id}`, `{licenseKey}`, etc. as needed):
 
-## Contributing
+- **Create License:**  
+  `POST http://localhost:8080/api/v1/licenses`
+- **Get All Licenses:**  
+  `GET http://localhost:8080/api/v1/licenses`
+- **Get License by ID:**  
+  `GET http://localhost:8080/api/v1/licenses/{id}`
+- **Get License by Key:**  
+  `GET http://localhost:8080/api/v1/licenses/key/{licenseKey}`
+- **Get Licenses by Customer:**  
+  `GET http://localhost:8080/api/v1/licenses/customer/{customerName}`
+- **Get Licenses by Product:**  
+  `GET http://localhost:8080/api/v1/licenses/product/{productName}`
+- **Get Licenses by Status:**  
+  `GET http://localhost:8080/api/v1/licenses/status/{status}`
+- **Get Expired Licenses:**  
+  `GET http://localhost:8080/api/v1/licenses/expired`
+- **Update License:**  
+  `PUT http://localhost:8080/api/v1/licenses/{id}`
+- **Update License Status:**  
+  `PATCH http://localhost:8080/api/v1/licenses/{id}/status?status=EXPIRED`
+- **Delete License:**  
+  `DELETE http://localhost:8080/api/v1/licenses/{id}`
+- **Generate License Key:**  
+  `GET http://localhost:8080/api/v1/licenses/generate-key`
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## License
-
-This project is for educational purposes. 
+> Always use the full URL (including `http://localhost:8080/api/v1`) when making requests from Postman, curl, or your frontend app.

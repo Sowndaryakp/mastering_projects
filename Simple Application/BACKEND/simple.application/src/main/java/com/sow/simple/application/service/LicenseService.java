@@ -4,6 +4,7 @@ import com.sow.simple.application.dto.LicenseRequest;
 import com.sow.simple.application.entity.License;
 import com.sow.simple.application.entity.LicenseStatus;
 import com.sow.simple.application.entity.User;
+import com.sow.simple.application.exception.ResourceNotFoundException;
 import com.sow.simple.application.repository.LicenseRepository;
 import com.sow.simple.application.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class LicenseService {
         // Set the current user as creator
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         license.setCreatedBy(currentUser);
         
         return licenseRepository.save(license);
@@ -48,12 +49,12 @@ public class LicenseService {
     
     public License getLicenseById(Long id) {
         return licenseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("License not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("License", "id", id));
     }
     
     public License getLicenseByKey(String licenseKey) {
         return licenseRepository.findByLicenseKey(licenseKey)
-                .orElseThrow(() -> new RuntimeException("License not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("License", "licenseKey", licenseKey));
     }
     
     public List<License> getAllLicenses() {
@@ -61,11 +62,19 @@ public class LicenseService {
     }
     
     public List<License> getLicensesByCustomer(String customerName) {
-        return licenseRepository.findByCustomerName(customerName);
+        List<License> licenses = licenseRepository.findByCustomerNameIgnoreCase(customerName);
+        if (licenses.isEmpty()) {
+            throw new ResourceNotFoundException("No licenses found for customer: " + customerName);
+        }
+        return licenses;
     }
     
     public List<License> getLicensesByProduct(String productName) {
-        return licenseRepository.findByProductName(productName);
+        List<License> licenses = licenseRepository.findByProductNameIgnoreCase(productName);
+        if (licenses.isEmpty()) {
+            throw new ResourceNotFoundException("No licenses found for product: " + productName);
+        }
+        return licenses;
     }
     
     public List<License> getLicensesByStatus(LicenseStatus status) {
@@ -93,7 +102,7 @@ public class LicenseService {
     
     public void deleteLicense(Long id) {
         if (!licenseRepository.existsById(id)) {
-            throw new RuntimeException("License not found");
+            throw new ResourceNotFoundException("License", "id", id);
         }
         licenseRepository.deleteById(id);
     }
@@ -106,5 +115,13 @@ public class LicenseService {
     
     public String generateLicenseKey() {
         return "LIC-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+    
+    public List<String> getAllCustomerNames() {
+        return licenseRepository.findAllCustomerNames();
+    }
+    
+    public List<String> getAllProductNames() {
+        return licenseRepository.findAllProductNames();
     }
 } 

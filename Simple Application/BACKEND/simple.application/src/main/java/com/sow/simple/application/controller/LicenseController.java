@@ -103,4 +103,18 @@ public class LicenseController {
         String licenseKey = licenseService.generateLicenseKey();
         return ResponseEntity.ok(licenseKey);
     }
+    
+    @GetMapping("/customers")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<List<String>> getAllCustomerNames() {
+        List<String> customerNames = licenseService.getAllCustomerNames();
+        return ResponseEntity.ok(customerNames);
+    }
+    
+    @GetMapping("/products")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<List<String>> getAllProductNames() {
+        List<String> productNames = licenseService.getAllProductNames();
+        return ResponseEntity.ok(productNames);
+    }
 } 

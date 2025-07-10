@@ -18,7 +18,13 @@ public interface LicenseRepository extends JpaRepository<License, Long> {
     
     List<License> findByCustomerName(String customerName);
     
+    // Case-insensitive search for customer name
+    List<License> findByCustomerNameIgnoreCase(String customerName);
+    
     List<License> findByProductName(String productName);
+    
+    // Case-insensitive search for product name
+    List<License> findByProductNameIgnoreCase(String productName);
     
     List<License> findByStatus(LicenseStatus status);
     
@@ -30,4 +36,12 @@ public interface LicenseRepository extends JpaRepository<License, Long> {
                                             @Param("endDate") LocalDate endDate);
     
     boolean existsByLicenseKey(String licenseKey);
+    
+    // Get all unique customer names
+    @Query("SELECT DISTINCT l.customerName FROM License l ORDER BY l.customerName")
+    List<String> findAllCustomerNames();
+    
+    // Get all unique product names
+    @Query("SELECT DISTINCT l.productName FROM License l ORDER BY l.productName")
+    List<String> findAllProductNames();
 } 

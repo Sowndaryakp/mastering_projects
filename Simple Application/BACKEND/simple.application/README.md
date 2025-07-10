@@ -535,3 +535,68 @@ Use these full URLs when making requests (replace `{id}`, `{licenseKey}`, etc. a
   `GET http://localhost:8080/api/v1/licenses/generate-key`
 
 > Always use the full URL (including `http://localhost:8080/api/v1`) when making requests from Postman, curl, or your frontend app.
+
+---
+
+## Let's Troubleshoot
+
+### 1. **Check Your SecurityConfig**
+
+Your `SecurityConfig` should have:
+```java
+.authorizeHttpRequests(auth -> auth
+    .requestMatchers("/api/v1/auth/**", "/h2-console/**", "/swagger-ui/**", "/api-docs/**").permitAll()
+    ...
+)
+```
+But with your context path, it should be:
+```java
+.requestMatchers("/api/v1/auth/**", ...)
+```
+If you only have `/auth/**`, it will NOT match `/api/v1/auth/login` and will require authentication, causing 403.
+
+---
+
+### 2. **How to Fix**
+
+**Update your `SecurityConfig` to:**
+```java
+<code_block_to_apply_changes_from>
+```
+This will allow anyone to access `/api/v1/auth/login` and `/api/v1/auth/register`.
+
+---
+
+### 3. **Restart Your Application**
+
+After making this change, restart your backend.
+
+---
+
+### 4. **Try Again**
+
+Send a POST request to:
+```
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+You should get a 200 OK and a token in the response.
+
+---
+
+## **Summary Table**
+
+| Endpoint                      | Should be Public? | Required Role |
+|-------------------------------|------------------|--------------|
+| POST /api/v1/auth/login       | Yes              | None         |
+| POST /api/v1/auth/register    | Yes              | None         |
+| GET /api/v1/licenses/status/* | No               | ADMIN/MANAGER|
+
+---
+
+**If you update your security config as above and still get 403, please paste your `SecurityConfig` code here and I’ll help you fix it!**

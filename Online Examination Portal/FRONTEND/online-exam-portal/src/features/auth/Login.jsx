@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import useAuthStore from './authSlice';
 import { roles } from '../../utils/roleUtils';
 
@@ -99,6 +99,11 @@ const Login = () => {
         >
           Login
         </button>
+        {/* Register link */}
+        <div className="mt-4 text-center">
+          <span className="text-gray-600">Don't have an account? </span>
+          <Link to="/register" className="text-blue-700 hover:underline font-semibold">Register</Link>
+        </div>
       </form>
     </div>
   );

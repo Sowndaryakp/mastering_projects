@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import useAuthStore from '../features/auth/authSlice';
+import useAuthStore from '../store/login';
 
 const SIDEBAR_WIDTH = 224; // 56 * 4 (w-56 in Tailwind = 224px)
 

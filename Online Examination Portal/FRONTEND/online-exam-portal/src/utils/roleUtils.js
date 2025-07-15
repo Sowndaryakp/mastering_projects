@@ -2,7 +2,7 @@
 
 export const roles = [
   'student',
-  'teacher',
+  'class_teacher', // Use class_teacher instead of teacher
   'hod',
   'principal',
   'admin',

@@ -1,5 +1,5 @@
 import React from 'react';
-import useAuthStore from '../features/auth/authSlice';
+import useAuthStore from '../store/login';
 import { Link } from 'react-router-dom';
 import logo from '../assets/soni.png';
 
@@ -25,9 +25,10 @@ const sidebarConfig = {
     { label: 'Overview', path: '/principal/overview' },
   ],
   admin: [
-    { label: 'Dashboard', path: '/admin' },
-    { label: 'User Management', path: '/admin/users' },
-    { label: 'Settings', path: '/admin/settings' },
+    { label: 'Students', path: '/admin/students' },
+    { label: 'Class Teachers', path: '/admin/class-teachers' },
+    { label: 'HODs', path: '/admin/hods' },
+    { label: 'Principals', path: '/admin/principals' },
   ],
 };
 
@@ -35,7 +36,7 @@ const SIDEBAR_WIDTH = 224; // 56 * 4
 
 const Sidebar = () => {
   const { role, sidebarOpen, closeSidebar } = useAuthStore();
-  const items = sidebarConfig[role] || [];
+  const items = sidebarConfig[role?.toLowerCase()] || [];
 
   // Sidebar for large screens (always visible)
   const desktopSidebar = (

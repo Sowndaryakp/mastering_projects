@@ -70,4 +70,82 @@ public class UserController {
         resp.setMessage("Student patched (test only)");
         return resp;
     }
+
+    // CLASS TEACHER CRUD
+    @GetMapping("/class-teachers")
+    public List<UserResponse> getAllClassTeachers() {
+        return userService.getAllByRole("CLASS_TEACHER");
+    }
+
+    @GetMapping("/class-teachers/{id}")
+    public UserResponse getClassTeacherById(@PathVariable Long id) {
+        return userService.getByRoleAndId("CLASS_TEACHER", id);
+    }
+
+    @PutMapping("/class-teachers/{id}")
+    public UserResponse updateClassTeacher(@PathVariable Long id, @RequestBody UpdateStudentRequest request) {
+        return userService.updateByRole(id, request, "CLASS_TEACHER");
+    }
+
+    @PatchMapping("/class-teachers/{id}")
+    public UserResponse patchClassTeacher(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+        return userService.patchByRole(id, updates, "CLASS_TEACHER");
+    }
+
+    @DeleteMapping("/class-teachers/{id}")
+    public void deleteClassTeacher(@PathVariable Long id) {
+        userService.deleteByRole(id, "CLASS_TEACHER");
+    }
+
+    // HOD CRUD
+    @GetMapping("/hods")
+    public List<UserResponse> getAllHods() {
+        return userService.getAllByRole("HOD");
+    }
+
+    @GetMapping("/hods/{id}")
+    public UserResponse getHodById(@PathVariable Long id) {
+        return userService.getByRoleAndId("HOD", id);
+    }
+
+    @PutMapping("/hods/{id}")
+    public UserResponse updateHod(@PathVariable Long id, @RequestBody UpdateStudentRequest request) {
+        return userService.updateByRole(id, request, "HOD");
+    }
+
+    @PatchMapping("/hods/{id}")
+    public UserResponse patchHod(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+        return userService.patchByRole(id, updates, "HOD");
+    }
+
+    @DeleteMapping("/hods/{id}")
+    public void deleteHod(@PathVariable Long id) {
+        userService.deleteByRole(id, "HOD");
+    }
+
+    // PRINCIPAL CRUD
+    @GetMapping("/principals")
+    public List<UserResponse> getAllPrincipals() {
+        return userService.getAllByRole("PRINCIPAL");
+    }
+
+    @GetMapping("/principals/{id}")
+    public UserResponse getPrincipalById(@PathVariable Long id) {
+        return userService.getByRoleAndId("PRINCIPAL", id);
+    }
+
+    @PutMapping("/principals/{id}")
+    public UserResponse updatePrincipal(@PathVariable Long id, @RequestBody UpdateStudentRequest request) {
+        return userService.updateByRole(id, request, "PRINCIPAL");
+    }
+
+    @PatchMapping("/principals/{id}")
+    public UserResponse patchPrincipal(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+        return userService.patchByRole(id, updates, "PRINCIPAL");
+    }
+
+    @DeleteMapping("/principals/{id}")
+    public void deletePrincipal(@PathVariable Long id) {
+        userService.deleteByRole(id, "PRINCIPAL");
+    }
 } 

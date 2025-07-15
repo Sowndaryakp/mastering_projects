@@ -112,6 +112,33 @@ public class UserServiceImpl implements UserService {
         }
         com.online.examination.portal.entity.User user = userOpt.get();
         com.online.examination.portal.entity.User approver = approverOpt.get();
+        // Approval logic for STUDENT, CLASS_TEACHER, HOD, PRINCIPAL
+        boolean canApprove = false;
+        if (approver.getRole() == Role.ADMIN) {
+            canApprove = true;
+        } else {
+            switch (user.getRole()) {
+                case STUDENT:
+                    canApprove = approver.getRole() == Role.CLASS_TEACHER;
+                    break;
+                case CLASS_TEACHER:
+                    canApprove = approver.getRole() == Role.HOD;
+                    break;
+                case HOD:
+                    canApprove = approver.getRole() == Role.PRINCIPAL;
+                    break;
+                case PRINCIPAL:
+                    canApprove = approver.getRole() == Role.ADMIN;
+                    break;
+                default:
+                    canApprove = false;
+            }
+        }
+        if (!canApprove) {
+            UserResponse resp = toUserResponse(user, approver.getName());
+            resp.setMessage("Approver does not have permission to approve this user");
+            return resp;
+        }
         if (user.getApprovalStatus() != ApprovalStatus.PENDING) {
             UserResponse resp = toUserResponse(user, approver.getName());
             resp.setMessage("User is not pending approval");
@@ -169,6 +196,87 @@ public class UserServiceImpl implements UserService {
     public void deleteStudent(Long id) {
         Optional<com.online.examination.portal.entity.User> userOpt = userRepository.findById(id);
         if (userOpt.isPresent() && userOpt.get().getRole() == Role.STUDENT) {
+            userRepository.deleteById(id);
+        }
+    }
+
+    @Override
+    public List<UserResponse> getAllByRole(String role) {
+        Role roleEnum = Role.valueOf(role);
+        List<com.online.examination.portal.entity.User> users = userRepository.findAll().stream()
+                .filter(u -> u.getRole() == roleEnum)
+                .collect(java.util.stream.Collectors.toList());
+        return users.stream().map(u -> toUserResponse(u, u.getApprover() != null ? u.getApprover().getName() : null)).collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    public UserResponse getByRoleAndId(String role, Long id) {
+        Role roleEnum = Role.valueOf(role);
+        java.util.Optional<com.online.examination.portal.entity.User> userOpt = userRepository.findById(id);
+        if (userOpt.isEmpty() || userOpt.get().getRole() != roleEnum) {
+            UserResponse resp = new UserResponse();
+            resp.setMessage(role.replace("_", " ").toLowerCase() + " not found");
+            return resp;
+        }
+        com.online.examination.portal.entity.User user = userOpt.get();
+        return toUserResponse(user, user.getApprover() != null ? user.getApprover().getName() : null);
+    }
+
+    @Override
+    public UserResponse updateByRole(Long id, UpdateStudentRequest request, String role) {
+        Role roleEnum = Role.valueOf(role);
+        java.util.Optional<com.online.examination.portal.entity.User> userOpt = userRepository.findById(id);
+        if (userOpt.isEmpty() || userOpt.get().getRole() != roleEnum) {
+            UserResponse resp = new UserResponse();
+            resp.setMessage(role.replace("_", " ").toLowerCase() + " not found");
+            return resp;
+        }
+        com.online.examination.portal.entity.User user = userOpt.get();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setClassOrDepartment(request.getClassOrDepartment());
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        userRepository.save(user);
+        UserResponse resp = toUserResponse(user, user.getApprover() != null ? user.getApprover().getName() : null);
+        resp.setMessage(role.replace("_", " ").toLowerCase() + " updated successfully");
+        return resp;
+    }
+
+    @Override
+    public UserResponse patchByRole(Long id, java.util.Map<String, Object> updates, String role) {
+        Role roleEnum = Role.valueOf(role);
+        UserResponse resp = new UserResponse();
+        com.online.examination.portal.entity.User user = userRepository.findById(id).orElse(null);
+        if (user == null || user.getRole() != roleEnum) {
+            resp.setMessage(role.replace("_", " ").toLowerCase() + " not found");
+            return resp;
+        }
+        if (updates.containsKey("name")) {
+            user.setName((String) updates.get("name"));
+        }
+        if (updates.containsKey("email")) {
+            user.setEmail((String) updates.get("email"));
+        }
+        if (updates.containsKey("classOrDepartment")) {
+            user.setClassOrDepartment((String) updates.get("classOrDepartment"));
+        }
+        userRepository.save(user);
+        resp.setId(user.getId());
+        resp.setName(user.getName());
+        resp.setEmail(user.getEmail());
+        resp.setRole(user.getRole());
+        resp.setApprovalStatus(user.getApprovalStatus());
+        resp.setClassOrDepartment(user.getClassOrDepartment());
+        resp.setApproverName(user.getApprover() != null ? user.getApprover().getName() : null);
+        resp.setMessage(role.replace("_", " ").toLowerCase() + " patched (test only)");
+        return resp;
+    }
+
+    @Override
+    public void deleteByRole(Long id, String role) {
+        Role roleEnum = Role.valueOf(role);
+        java.util.Optional<com.online.examination.portal.entity.User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent() && userOpt.get().getRole() == roleEnum) {
             userRepository.deleteById(id);
         }
     }

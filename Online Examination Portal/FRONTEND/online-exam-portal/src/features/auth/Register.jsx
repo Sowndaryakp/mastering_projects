@@ -49,7 +49,7 @@ const Register = () => {
       <ToastContainer position="top-center" />
       <div
         className="flex items-center justify-center min-h-screen bg-cover bg-center relative"
-        // style={{ backgroundImage }}
+        style={{ backgroundImage }}
       >
         {/* Overlay for readability */}
         <div className="absolute inset-0 bg-black bg-opacity-50 z-0" />

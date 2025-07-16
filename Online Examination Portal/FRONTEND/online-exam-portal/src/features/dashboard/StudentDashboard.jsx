@@ -1,7 +1,6 @@
 import React from 'react';
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
-import Footer from '../../components/Footer';
 
 const SIDEBAR_WIDTH = 224; // 56 * 4 (w-56 in Tailwind = 224px)
 
@@ -16,7 +15,6 @@ const StudentDashboard = () => {
         <h1 className="text-2xl font-bold mb-4 text-blue-800">Student Dashboard</h1>
         {/* Dashboard content here */}
       </main>
-      <Footer />
     </div>
   );
 };

@@ -21,15 +21,25 @@ const AppRoutes = () => (
     <Route path="/register" element={<Register />} />
     {/* All dashboard/protected routes wrapped in Layout */}
     <Route element={<Layout />}>
-      <Route path="/student" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
-      <Route path="/teacher" element={<ProtectedRoute role="teacher"><TeacherDashboard /></ProtectedRoute>} />
-      <Route path="/hod" element={<ProtectedRoute role="hod"><HODDashboard /></ProtectedRoute>} />
-      <Route path="/principal" element={<ProtectedRoute role="principal"><PrincipalDashboard /></ProtectedRoute>} />
-      <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/student" element={<ProtectedRoute role="STUDENT"><StudentDashboard /></ProtectedRoute>} />
+      <Route path="/teacher" element={<ProtectedRoute role="CLASS_TEACHER"><TeacherDashboard /></ProtectedRoute>} />
+      <Route path="/hod" element={<ProtectedRoute role="HOD"><HODDashboard /></ProtectedRoute>} />
+      <Route path="/principal" element={<ProtectedRoute role="PRINCIPAL"><PrincipalDashboard /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute role="ADMIN"><AdminDashboard /></ProtectedRoute>} />
       <Route path="/admin/students" element={<ProtectedRoute role="admin"><AdminStudents /></ProtectedRoute>} />
       <Route path="/admin/class-teachers" element={<ProtectedRoute role="admin"><ClassTeachers /></ProtectedRoute>} />
       <Route path="/admin/hods" element={<ProtectedRoute role="admin"><HODs /></ProtectedRoute>} />
       <Route path="/admin/principals" element={<ProtectedRoute role="admin"><Principals /></ProtectedRoute>} />
+
+      <Route path="/principal/students" element={<ProtectedRoute role="PRINCIPAL"><AdminStudents /></ProtectedRoute>} />
+      <Route path="/principal/class-teachers" element={<ProtectedRoute role="PRINCIPAL"><ClassTeachers /></ProtectedRoute>} />
+      <Route path="/principal/hods" element={<ProtectedRoute role="PRINCIPAL"><HODs /></ProtectedRoute>} />
+
+      <Route path="/hod/students" element={<ProtectedRoute role="HOD"><AdminStudents /></ProtectedRoute>} />
+      <Route path="/hod/class-teachers" element={<ProtectedRoute role="HOD"><ClassTeachers /></ProtectedRoute>} />
+      
+      <Route path="/class_teacher/students" element={<ProtectedRoute role="class_teacher"><AdminStudents /></ProtectedRoute>} />
+
     </Route>
     <Route path="*" element={<Navigate to="/login" replace />} />
   </Routes>

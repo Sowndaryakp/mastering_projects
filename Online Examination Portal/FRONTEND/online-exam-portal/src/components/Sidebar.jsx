@@ -9,20 +9,24 @@ const sidebarConfig = {
     { label: 'My Exams', path: '/student/exams' },
     { label: 'Results', path: '/student/results' },
   ],
-  teacher: [
+  // class_teachers: [
+  //   { label: 'Dashboard', path: '/class_teachers' },
+  //   { label: 'Students', path: '/class_teachers/students' },
+  // ],
+  class_teacher: [
     { label: 'Dashboard', path: '/teacher' },
-    { label: 'Manage Exams', path: '/teacher/exams' },
-    { label: 'Students', path: '/teacher/students' },
+    { label: 'Students', path: '/class_teacher/students' },
   ],
   hod: [
     { label: 'Dashboard', path: '/hod' },
-    { label: 'Teachers', path: '/hod/teachers' },
-    { label: 'Reports', path: '/hod/reports' },
+    { label: 'Students', path: '/hod/students' },
+    { label: 'Teachers', path: '/hod/class-teachers' },
   ],
   principal: [
     { label: 'Dashboard', path: '/principal' },
-    { label: 'Departments', path: '/principal/departments' },
-    { label: 'Overview', path: '/principal/overview' },
+    { label: 'Students', path: '/principal/students' },
+    { label: 'Class Teachers', path: '/principal/class-teachers' },
+    { label: 'HODs', path: '/principal/hods' },
   ],
   admin: [
     { label: 'Students', path: '/admin/students' },
@@ -30,6 +34,11 @@ const sidebarConfig = {
     { label: 'HODs', path: '/admin/hods' },
     { label: 'Principals', path: '/admin/principals' },
   ],
+  teacher: [
+    { label: 'Dashboard', path: '/teacher' },
+    { label: 'Students', path: '/admin/students' },
+  ],
+
 };
 
 const SIDEBAR_WIDTH = 224; // 56 * 4

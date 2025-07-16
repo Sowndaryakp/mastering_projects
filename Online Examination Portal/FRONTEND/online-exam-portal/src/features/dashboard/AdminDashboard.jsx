@@ -16,7 +16,7 @@ const AdminDashboard = () => {
         <h1 className="text-2xl font-bold mb-4 text-blue-800">Admin Dashboard</h1>
         {/* Dashboard content here */}
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 };

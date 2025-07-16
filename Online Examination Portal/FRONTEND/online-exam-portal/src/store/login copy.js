@@ -11,7 +11,6 @@ const useAuthStore = create(
       userId: null,
       role: null,
       user: null, // <-- add user to state
-      email: null, // <-- add email to state
       error: null,
       login: async (email, password) => {
         try {
@@ -19,7 +18,7 @@ const useAuthStore = create(
           console.log('Login API response:', response.data);
           const { token, userId, role } = response.data;
           if (token && userId && role) {
-            set({ token, userId, role, user: null, email, error: null }); // <-- set email on login
+            set({ token, userId, role, user: null, error: null }); // or set user to { userId } or similar
             return { success: true, role };
           } else {
             set({ error: 'Login failed or account not approved yet.' });
@@ -30,7 +29,7 @@ const useAuthStore = create(
           return { success: false };
         }
       },
-      logout: () => set({ token: null, userId: null, role: null, user: null, email: null, error: null }), // <-- clear email on logout
+      logout: () => set({ token: null, userId: null, role: null, user: null, error: null }), // <-- clear user on logout
     }),
     {
       name: 'auth-storage', // key in localStorage

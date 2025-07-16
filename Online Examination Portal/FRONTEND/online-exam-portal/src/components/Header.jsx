@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import useAuthStore from '../store/login';
+import { useNavigate } from 'react-router-dom';
 
 const SIDEBAR_WIDTH = 224; // 56 * 4 (w-56 in Tailwind = 224px)
 
 const Header = () => {
-  const { user, role, logout, toggleSidebar } = useAuthStore();
+  const { email, role, logout, toggleSidebar } = useAuthStore();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef();
+  const navigate = useNavigate();
 
   // Close popup when clicking outside
   useEffect(() => {
@@ -23,11 +25,7 @@ const Header = () => {
   // Get initials for avatar
   const getInitials = (email) => {
     if (!email) return '';
-    const [name] = email.split('@');
-    return name
-      .split('.')
-      .map((n) => n[0]?.toUpperCase())
-      .join('');
+    return email.slice(0, 2).toUpperCase();
   };
 
   return (
@@ -58,43 +56,56 @@ const Header = () => {
             <span className="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500"></span>
           </button>
           {/* Profile Avatar */}
-          {user && (
+          {email && (
             <div className="flex items-center gap-2 relative">
               <div
                 className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold text-lg border border-blue-300 cursor-pointer"
                 onClick={() => setProfileOpen((v) => !v)}
-                ref={profileRef}
               >
-                {getInitials(user.email)}
+                {getInitials(email)}
               </div>
               {/* Profile popup for mobile */}
               {profileOpen && (
-                <div className="absolute -left-36 top-12 sm:hidden bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50 min-w-[180px] text-center">
-                  <div className="text-gray-700 font-medium text-base mb-1">{user.email}</div>
+                <div
+                  className="absolute -left-36 top-12 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50 min-w-[180px] text-center"
+                  ref={profileRef}
+                >
+                  <div className="text-gray-700 font-medium text-base mb-1">{email}</div>
                   <div className="text-xs text-blue-600 font-semibold mb-2">{role}</div>
                   <button
-                    onClick={logout}
+                    onClick={() => {
+                      logout();
+                      setProfileOpen(false);
+                      navigate('/login');
+                    }}
                     className="mt-2 px-4 py-2 bg-blue-700 text-white rounded-lg font-semibold shadow hover:bg-blue-800 transition text-sm w-full"
                   >
                     Logout
                   </button>
                 </div>
               )}
-              <div className="flex flex-col text-right max-sm:hidden">
-                <span className="text-gray-700 font-medium text-sm">{user.email}</span>
+              {/* <div className="flex flex-col text-right max-sm:hidden">
+                <span className="text-gray-700 font-medium text-sm">{email}</span>
                 <span className="text-xs text-blue-600 font-semibold">{role}</span>
-              </div>
+              </div> */}
             </div>
           )}
+
+
+
+          
           {/* Logout Button */}
-          {user && (
+          {/* {email && (
             <button
-              onClick={logout}
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
               className="ml-2 px-3 py-2 bg-blue-700 text-white rounded-lg font-semibold shadow hover:bg-blue-800 transition text-sm max-sm:hidden"
             >
               Logout
             </button>
-          )}
+          )} */}
         </div>
       </div>
       {/* Only apply marginLeft for large screens */}

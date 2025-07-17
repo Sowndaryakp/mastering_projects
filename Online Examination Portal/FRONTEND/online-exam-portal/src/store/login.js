@@ -22,7 +22,7 @@ const useAuthStore = create(
             set({ token, userId, role, user: null, email, error: null }); // <-- set email on login
             return { success: true, role };
           } else {
-            set({ error: 'Login failed or account not approved yet.' });
+            set({ error: response.data.message || 'Login failed or account not approved yet.' });
             return { success: false };
           }
         } catch (err) {
@@ -37,5 +37,12 @@ const useAuthStore = create(
     }
   )
 );
+
+// Clear zustand persisted storage on every page refresh
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', () => {
+    localStorage.removeItem('auth-storage');
+  });
+}
 
 export default useAuthStore; 

@@ -66,26 +66,27 @@ public class UserServiceImpl implements UserService {
     @Override
     public JwtResponse login(LoginRequest request) {
         Optional<com.online.examination.portal.entity.User> userOpt = userRepository.findByEmail(request.getEmail());
+        JwtResponse resp = new JwtResponse();
         if (userOpt.isEmpty()) {
-            JwtResponse resp = new JwtResponse();
             resp.setToken(null);
             resp.setRole(null);
             resp.setUserId(null);
+            resp.setMessage("User not found. Please check your email.");
             return resp;
         }
         com.online.examination.portal.entity.User user = userOpt.get();
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            JwtResponse resp = new JwtResponse();
             resp.setToken(null);
             resp.setRole(null);
             resp.setUserId(null);
+            resp.setMessage("Incorrect password. Please try again.");
             return resp;
         }
         if (user.getApprovalStatus() != ApprovalStatus.APPROVED) {
-            JwtResponse resp = new JwtResponse();
             resp.setToken(null);
             resp.setRole(null);
             resp.setUserId(null);
+            resp.setMessage("User not approved yet. Please wait for approval.");
             return resp;
         }
         UserDetails userDetails = org.springframework.security.core.userdetails.User
@@ -94,10 +95,10 @@ public class UserServiceImpl implements UserService {
                 .roles(user.getRole().name())
                 .build();
         String token = jwtUtil.generateToken(userDetails);
-        JwtResponse resp = new JwtResponse();
         resp.setToken(token);
         resp.setRole(user.getRole());
         resp.setUserId(user.getId());
+        resp.setMessage("Login successful.");
         return resp;
     }
 

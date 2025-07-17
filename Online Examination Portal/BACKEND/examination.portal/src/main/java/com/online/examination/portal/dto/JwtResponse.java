@@ -8,4 +8,5 @@ public class JwtResponse {
     private String token;
     private Long userId;
     private Role role;
+    private String message;
 } 
